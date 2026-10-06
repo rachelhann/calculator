@@ -20,7 +20,13 @@ import androidx.compose.ui.unit.dp
 
 /** Shows past calculations (newest first), lets the user clear them, and go back. */
 @Composable
-fun HistoryScreen(history: List<String>, onClear: () -> Unit, onBack: () -> Unit) {
+fun HistoryScreen(
+    history: List<String>,
+    onClear: () -> Unit,
+    onBack: () -> Unit,
+    darkTheme: Boolean,
+    onToggleDarkTheme: () -> Unit
+) {
     Column(modifier = Modifier.fillMaxSize()) {
         CalculatorTopBar(
             title = "History",
@@ -30,6 +36,7 @@ fun HistoryScreen(history: List<String>, onClear: () -> Unit, onBack: () -> Unit
                 }
             },
             actions = {
+                DarkModeToggle(darkTheme = darkTheme, onToggle = onToggleDarkTheme)
                 if (history.isNotEmpty()) {
                     IconButton(onClick = onClear) {
                         Icon(imageVector = Icons.Default.Delete, contentDescription = "Clear History")

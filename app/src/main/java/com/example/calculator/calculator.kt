@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,26 +40,35 @@ import androidx.compose.ui.unit.dp
  * so the keypad always fits on screen without scrolling.
  */
 @Composable
-fun Calculator(modifier: Modifier = Modifier, viewModel: CalculatorViewModel) {
+fun Calculator(
+    modifier: Modifier = Modifier,
+    viewModel: CalculatorViewModel,
+    darkTheme: Boolean,
+    onToggleDarkTheme: () -> Unit
+) {
     val equationText by viewModel.equationText.observeAsState("")
     val resultText by viewModel.resultText.observeAsState("0")
     val history by viewModel.history.observeAsState(emptyList())
     var showHistory by remember { mutableStateOf(false) }
+
+    val topBarActions: @Composable RowScope.() -> Unit = {
+        DarkModeToggle(darkTheme = darkTheme, onToggle = onToggleDarkTheme)
+        HistoryButton(onClick = { showHistory = true })
+    }
 
     Box(modifier = modifier) {
         if (showHistory) {
             HistoryScreen(
                 history = history,
                 onClear = { viewModel.clearHistory() },
-                onBack = { showHistory = false }
+                onBack = { showHistory = false },
+                darkTheme = darkTheme,
+                onToggleDarkTheme = onToggleDarkTheme
             )
         } else if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             Row(modifier = Modifier.fillMaxSize()) {
                 Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                    CalculatorTopBar(
-                        title = "",
-                        actions = { HistoryButton(onClick = { showHistory = true }) }
-                    )
+                    CalculatorTopBar(title = "", actions = topBarActions)
                     DisplaySection(
                         equation = equationText,
                         result = resultText,
@@ -71,10 +82,7 @@ fun Calculator(modifier: Modifier = Modifier, viewModel: CalculatorViewModel) {
             }
         } else {
             Column(modifier = Modifier.fillMaxSize()) {
-                CalculatorTopBar(
-                    title = "",
-                    actions = { HistoryButton(onClick = { showHistory = true }) }
-                )
+                CalculatorTopBar(title = "", actions = topBarActions)
                 DisplaySection(
                     equation = equationText,
                     result = resultText,
@@ -93,6 +101,17 @@ fun Calculator(modifier: Modifier = Modifier, viewModel: CalculatorViewModel) {
 private fun HistoryButton(onClick: () -> Unit) {
     IconButton(onClick = onClick) {
         Icon(imageVector = Icons.Default.History, contentDescription = "History")
+    }
+}
+
+/** Lets the user override the system light/dark setting from within the app. */
+@Composable
+fun DarkModeToggle(darkTheme: Boolean, onToggle: () -> Unit) {
+    IconButton(onClick = onToggle) {
+        Icon(
+            imageVector = if (darkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+            contentDescription = if (darkTheme) "Switch to light mode" else "Switch to dark mode"
+        )
     }
 }
 
